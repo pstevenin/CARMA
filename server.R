@@ -2,10 +2,6 @@
 #' 
 #' @description Server side for shiny app.
 #' 
-#' @param input description
-#' @param output description
-#' @param session description
-#' 
 server <- function(input, output, session) {
   
   #reading load.RDS file
@@ -55,6 +51,7 @@ server <- function(input, output, session) {
   
   #reactive data cleaning: map is updated each time an input is changed
   dataMap <- reactive({
+    #apply function in clean.R
     fClean(dirData = req(input$dirData),
            baseMap = req(input$baseMap),
            equipment = req(input$equipment),
@@ -76,8 +73,8 @@ server <- function(input, output, session) {
       #map with points for Sites
       else {
         tmap::tm_basemap(server = "OpenStreetMap.France") +
-          tm_shape(shp = dataMap(), name = req(input$baseMap)) +
-          tm_dots(col = "moyenne", alpha = 0.5, palette = "Reds")
+          tmap::tm_shape(shp = dataMap(), name = req(input$baseMap)) +
+          tmap::tm_dots(col = "moyenne", alpha = 0.5, palette = "Reds")
       }
     }
   })

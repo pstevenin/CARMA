@@ -1,5 +1,4 @@
 #libraries
-library(devtools)
 library(dplyr)
 library(DT)
 library(readxl)
@@ -15,5 +14,6 @@ options(dplyr.summarise.inform = FALSE)
 #interactive map
 tmap::tmap_mode(mode = "view")
 
-#loading functions
-devtools::load_all(quiet = T)
+#loading R functions
+file.sources = list.files(path = "/R", pattern = "*.R$", full.names = T,  ignore.case = T)
+sapply(X = file.sources, FUN = source, simplify = .GlobalEnv)
