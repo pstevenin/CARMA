@@ -6,6 +6,7 @@
 #' @param dirData (Character) Directory path name.
 #' @param equipment (Character) Equipment name: "Disjoncteur", "Cable".
 #' 
+#' @return Returns a Data.frame containing: year, location, number or length of equipment, age.
 fRead <- function (dirData, equipment) {
   
   #reading equipment data base : NA values are excluded (read_xlsx option: na = "NA")

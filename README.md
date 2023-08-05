@@ -21,7 +21,7 @@ Outil de visualisation géographique des âges moyens des équipements haute ten
 * Avant toute utilisation, disposer d'un répertoire de données d'entrées composé des éléments suivants :
   + 1 fichier csv de correspondance de noms par catégorie de localisation (GMR / GDP / Maintenance)
   + 1 fichier Excel contenant les données patrimoniales
-  + 1 Répertoire contenant les données géographiques
+  + 1 Répertoire appelé **data_geographie** contenant les données géographiques
 * L'application se compose des éléments suivants :
   + Un bandeau de gauche contenant les données d'entrée
   + Une carte géographique en haut de l'écran principal

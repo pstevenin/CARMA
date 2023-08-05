@@ -11,10 +11,9 @@ library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
 
-
-#hide warning messages from summarise function
+#hide warning messages from group_by/summarise functions
 options(dplyr.summarise.inform = F)
 
-#loading R functions
+#loading R functions in /R directory
 file.sources = list.files(path = "/R", pattern = "*.R$", full.names = T,  ignore.case = T)
 sapply(X = file.sources, FUN = source, simplify = .GlobalEnv)

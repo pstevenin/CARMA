@@ -8,6 +8,7 @@
 #' @param equipment (Character) Equipment name: "Disjoncteur", "Cable".
 #' @param year (Character) Year of collecting equipment data.
 #' 
+#' @return Returns a Data.frame containing: location, mean age, number or length of equipment, and geographical data.
 fClean <- function (dirData, baseMap, equipment, year) {
   
   #reading equipment data base
@@ -27,7 +28,8 @@ fClean <- function (dirData, baseMap, equipment, year) {
     #- filter by year
     #- select columns GMR, Nb, Age
     #- join with fileCor and fileBaseMap by GMR
-    #- get total number of equipment and mean age per GMR
+    #- get total number or length of equipment and mean age per GMR
+    #- select GMR, Nombre, Moyenne, geometry 
     dataResult <- fileMat %>%
       dplyr::filter(ANNEE==year) %>%
       dplyr::select(GMR, Nb, Age) %>%
@@ -50,7 +52,8 @@ fClean <- function (dirData, baseMap, equipment, year) {
     #- filter by year
     #- select columns CM, Nb, Age
     #- join with fileCor and fileBaseMap by CM
-    #- get total number of equipment and mean age per CM
+    #- get total number or length of equipment and mean age per CM
+    #- select CM, Nombre, Moyenne, geometry 
     dataResult <- fileMat %>%
       dplyr::filter(ANNEE==year) %>%
       dplyr::select(CM, Nb, Age) %>%
@@ -73,7 +76,7 @@ fClean <- function (dirData, baseMap, equipment, year) {
     #- filter by year
     #- select columns SITE, Nb, Age
     #- join with fileBaseMap by Site
-    #- delete 
+    #- select SITE, Nombre, Moyenne, geometry 
     dataResult <- fileMat %>%
       dplyr::filter(ANNEE==year) %>%
       dplyr::select(SITE, Nb, Age) %>%
@@ -86,13 +89,14 @@ fClean <- function (dirData, baseMap, equipment, year) {
     #reading GDP correspondence file
     fileCor <-  read.csv2(file = file.path(dirData, "correspondance_nom_GDP.csv"), sep = ",")
     
-    #no Site correspondence for underground cables
+    #no GDP correspondence for underground cables
     if (equipment=="Cable") { return(1) }
     
     #- filter by year
     #- select columns GDP, Nb, Age
     #- join with fileCor and fileBaseMap by GDP
-    #- get total number of equipment and mean age per GDP
+    #- get total number or length of equipment and mean age per GDP
+    #- select GDP, Nombre, Moyenne, geometry 
     dataResult <- fileMat %>%
       dplyr::filter(ANNEE==year) %>%
       dplyr::select(GDP, Nb, Age) %>%
@@ -104,7 +108,7 @@ fClean <- function (dirData, baseMap, equipment, year) {
       dplyr::select(GDP, Nombre, Moyenne, geometry) %>%
       sf::st_as_sf()
   }
-  #rename columns
+  #rename columns: length for cables, number for circuit breakers.
   names(dataResult)[2:3] <- c(ifelse(equipment=="Disjoncteur", "Nombre total", "Longueur totale"), "Age moyen")
   
   return(dataResult)

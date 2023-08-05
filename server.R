@@ -30,15 +30,16 @@ server <- function(input, output, session) {
   
   #display available years in data base depending on equipment
   output$uiYear <- renderUI({
-    #reading equipment data base
+    #reading equipment data base (function in read.R)
     fileMat <- fRead(dirData = req(input$dirData),
                      equipment = req(input$equipment))
+    #display list
     shiny::selectInput(inputId = "year", label = "Année", choices = sort(unique(fileMat$ANNEE)))
   })
   
   #reactive data cleaning: map updated when input changes
   dataMap <- shiny::reactive({
-    #apply function in clean.R
+    #function in clean.R
     fClean(dirData = req(input$dirData),
            baseMap = req(input$baseMap),
            equipment = req(input$equipment),
@@ -47,18 +48,21 @@ server <- function(input, output, session) {
   
   #display map
   output$map <- leaflet::renderLeaflet({
-    #unwanted case: underground cables by Sites
+    #unwanted cases: no underground cables by Sites or GDP
     if (length(dataMap())==1) { 
       shiny::showModal(shiny::modalDialog(title = "Données absentes", size = "s", footer = shiny::modalButton("OK"), easyClose = T))
       return(NULL)
     }
     #other cases
     else {
-      #color scales
+      #color scales (using RColorBrewer palettes):
+      #- minimum: function floor to get the first integer lower or equal to minimum value
+      #- maximum: function ceiling to get the first integer upper or equal to maximum value
+      #- step: minimum between 9 (palette max number of colors) and number of different values in database
       minScale <- floor(min(dataMap()$'Age moyen', na.rm = T))
       maxScale <- ceiling(max(dataMap()$'Age moyen', na.rm = T))
       stepScale <- min(9, length(unique(dataMap()$'Age moyen')))
-      #map
+      #mapping: use of popupTable to display table when click on location
       mapview::mapView(dataMap(), zcol = "Age moyen", layer.name = req(input$baseMap),
                        col.region = RColorBrewer::brewer.pal(stepScale, "YlOrRd"), at = seq(minScale, maxScale, (maxScale-minScale)/(stepScale-1)),
                        popup = leafpop::popupTable(sf::st_drop_geometry(dataMap()), feature.id = F, row.numbers = F))@map
@@ -67,7 +71,7 @@ server <- function(input, output, session) {
   
   #display table
   output$table <- DT::renderDataTable({
-    #unwanted case: underground cables by Sites
+    #unwanted case: no underground cables by Sites or GDP
     if (length(dataMap())==1) { return(NULL) }
     #other cases
     else {
