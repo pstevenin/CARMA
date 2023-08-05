@@ -11,7 +11,7 @@ ui <- shinydashboard::dashboardPage(
   shinydashboard::dashboardSidebar(
     shiny::textInput(inputId = "dirData", label = "Répertoire des données"),
     shiny::selectInput(inputId = "equipment", label = "Equipement", choices = c("Câble souterrain" = "Cable", "Disjoncteur" = "Disjoncteur")),
-    shiny::uiOutput(outputId = "uiBaseMap"),
+    shiny::selectInput(inputId = "baseMap", label = "Fond de carte RTE", choices = c("GMR", "Maintenance", "Sites", "GDP")),
     shiny::uiOutput(outputId = "uiYear"),
     shiny::tags$footer(
       shinyWidgets::actionBttn(inputId = "load", label = "Charger", style = "stretch", icon = icon("upload"), size = "sm"),
@@ -26,7 +26,7 @@ ui <- shinydashboard::dashboardPage(
     shiny::fluidRow(
       shinydashboard::box(
         width = 12,
-        tmap::tmapOutput(outputId = "map")
+        leaflet::leafletOutput(outputId = "map")
         ),
       shinydashboard::box(
         width = 12,

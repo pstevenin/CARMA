@@ -4,53 +4,40 @@
 #' 
 server <- function(input, output, session) {
   
-  #reading load.RDS file
-  lLoad <- shiny::reactiveValues(data = {
-    if (file.exists("load.RDS")) { readRDS(file = "load.RDS") }
-  })
-  
   #load inputs
   shiny::observeEvent(input$load, {
     #loading if file exists
-    if (file.exists("load.RDS")) {
-      shiny::updateTextInput(inputId = "dirData", value = lLoad$data[[1]])
-      shiny::updateSelectInput(inputId = "baseMap", selected = lLoad$data[[2]])
+    if (file.exists("data/input.rda")) {
+      load("data/input.rda")
+      shiny::updateTextInput(inputId = "dirData", value = input$dirData)
+      shiny::updateSelectInput(inputId = "equipment", selected = input$equipment)
+      shiny::updateSelectInput(inputId = "baseMap", selected = input$baseMap)
     }
     else { shiny::showModal(shiny::modalDialog(title = "Fichier inexistant", size = "s", footer = shiny::modalButton("OK"), easyClose = T)) }
   })
   
   #save inputs
   shiny::observeEvent(input$save, {
-    lInput <- list()
-    lInput[[1]] <- input$dirData
-    lInput[[2]] <- input$baseMap
-    saveRDS(lInput, "load.RDS")
+    input <- data.frame(dirData = input$dirData,
+                        equipment = input$equipment,
+                        baseMap = input$baseMap)
+    save(input, file = "data/input.rda")
     shiny::showModal(shiny::modalDialog(title = "Données sauvegardées", size = "s", footer = shiny::modalButton("OK"), easyClose = T))
   })
   
   #exit app
   shiny::observeEvent(input$exit, { shiny::stopApp() })
   
-  #display available base maps depending on equipment
-  output$uiBaseMap <- renderUI({
-    if (input$equipment=="Disjoncteur") {
-      selectInput(inputId = "baseMap", label = "Fond de carte RTE", choices = c("GMR", "Maintenance", "Sites"))
-    }
-    else {
-      selectInput(inputId = "baseMap", label = "Fond de carte RTE", choices = c("GMR", "Maintenance"))
-    }
-  })
-  
   #display available years in data base depending on equipment
   output$uiYear <- renderUI({
     #reading equipment data base
     fileMat <- fRead(dirData = req(input$dirData),
                      equipment = req(input$equipment))
-    selectInput(inputId = "year", label = "Année", choices = sort(unique(fileMat$ANNEE)))
+    shiny::selectInput(inputId = "year", label = "Année", choices = sort(unique(fileMat$ANNEE)))
   })
   
-  #reactive data cleaning: map is updated each time an input is changed
-  dataMap <- reactive({
+  #reactive data cleaning: map updated when input changes
+  dataMap <- shiny::reactive({
     #apply function in clean.R
     fClean(dirData = req(input$dirData),
            baseMap = req(input$baseMap),
@@ -59,23 +46,22 @@ server <- function(input, output, session) {
   })
   
   #display map
-  output$map <- tmap::renderTmap({
+  output$map <- leaflet::renderLeaflet({
     #unwanted case: underground cables by Sites
-    if (length(dataMap())==1) { return(NULL) }
+    if (length(dataMap())==1) { 
+      shiny::showModal(shiny::modalDialog(title = "Données absentes", size = "s", footer = shiny::modalButton("OK"), easyClose = T))
+      return(NULL)
+    }
     #other cases
     else {
-      #map with polygons for GMR, Maintenance and GDP
-      if (class(dataMap()$geometry)[1]=="sfc_MULTIPOLYGON") {
-        tmap::tm_basemap(server = "OpenStreetMap.France") +
-          tmap::tm_shape(shp = dataMap(), name = req(input$baseMap)) +
-          tmap::tm_fill(col = "moyenne", palette = "Reds", alpha = 0.5)
-      }
-      #map with points for Sites
-      else {
-        tmap::tm_basemap(server = "OpenStreetMap.France") +
-          tmap::tm_shape(shp = dataMap(), name = req(input$baseMap)) +
-          tmap::tm_dots(col = "moyenne", alpha = 0.5, palette = "Reds")
-      }
+      #color scales
+      minScale <- floor(min(dataMap()$'Age moyen', na.rm = T))
+      maxScale <- ceiling(max(dataMap()$'Age moyen', na.rm = T))
+      stepScale <- min(9, length(unique(dataMap()$'Age moyen')))
+      #map
+      mapview::mapView(dataMap(), zcol = "Age moyen", layer.name = req(input$baseMap),
+                       col.region = RColorBrewer::brewer.pal(stepScale, "YlOrRd"), at = seq(minScale, maxScale, (maxScale-minScale)/(stepScale-1)),
+                       popup = leafpop::popupTable(sf::st_drop_geometry(dataMap()), feature.id = F, row.numbers = F))@map
     }
   })
   

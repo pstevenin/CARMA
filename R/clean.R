@@ -34,9 +34,9 @@ fClean <- function (dirData, baseMap, equipment, year) {
       dplyr::left_join(fileCor, by = c('GMR'='fichier Indicateurs')) %>%
       dplyr::left_join(fileBaseMap, by = c('df_gmr$NOM_GMR'='NOM_GMR')) %>%
       dplyr::group_by(GMR, geometry) %>%
-      dplyr::summarise(somme = sum(Nb, na.rm = T), moyenne = mean(Age, na.rm = T)) %>%
+      dplyr::summarise(Nombre = sum(Nb, na.rm = T), Moyenne = mean(Age, na.rm = T)) %>%
       dplyr::ungroup() %>%
-      dplyr::select(GMR, somme, moyenne, geometry) %>%
+      dplyr::select(GMR, Nombre, Moyenne, geometry) %>%
       sf::st_as_sf()
     
   }
@@ -57,9 +57,9 @@ fClean <- function (dirData, baseMap, equipment, year) {
       dplyr::left_join(fileCor, by = c('CM'='nom3')) %>%
       dplyr::left_join(fileBaseMap, by = c('nom1'='NOM_MAINTE')) %>%
       dplyr::group_by(CM, geometry) %>%
-      dplyr::summarise(somme = sum(Nb, na.rm = T), moyenne = mean(Age, na.rm = T)) %>%
+      dplyr::summarise(Nombre = sum(Nb, na.rm = T), Moyenne = mean(Age, na.rm = T)) %>%
       dplyr::ungroup() %>%
-      dplyr::select(CM, somme, moyenne, geometry) %>%
+      dplyr::select(CM, Nombre, Moyenne, geometry) %>%
       sf::st_as_sf()
     
   }
@@ -78,14 +78,34 @@ fClean <- function (dirData, baseMap, equipment, year) {
       dplyr::filter(ANNEE==year) %>%
       dplyr::select(SITE, Nb, Age) %>%
       dplyr::left_join(fileBaseMap, by = c('SITE'='IDR')) %>%
-      dplyr::select(SITE, somme = Nb, moyenne = Age, geometry) %>%
+      dplyr::select(SITE, Nombre = Nb, Moyenne = Age, geometry) %>%
       dplyr::distinct() %>%
       sf::st_as_sf()
   }
+  else if (baseMap=="GDP") {
+    #reading GDP correspondence file
+    fileCor <-  read.csv2(file = file.path(dirData, "correspondance_nom_GDP.csv"), sep = ",")
+    
+    #no Site correspondence for underground cables
+    if (equipment=="Cable") { return(1) }
+    
+    #- filter by year
+    #- select columns GDP, Nb, Age
+    #- join with fileCor and fileBaseMap by GDP
+    #- get total number of equipment and mean age per GDP
+    dataResult <- fileMat %>%
+      dplyr::filter(ANNEE==year) %>%
+      dplyr::select(GDP, Nb, Age) %>%
+      dplyr::left_join(fileCor, by = c('GDP'='nom1')) %>%
+      dplyr::left_join(fileBaseMap, by = c('nom3'='CODE_GDP')) %>%
+      dplyr::group_by(GDP, geometry) %>%
+      dplyr::summarise(Nombre = sum(Nb, na.rm = T), Moyenne = mean(Age, na.rm = T)) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(GDP, Nombre, Moyenne, geometry) %>%
+      sf::st_as_sf()
+  }
+  #rename columns
+  names(dataResult)[2:3] <- c(ifelse(equipment=="Disjoncteur", "Nombre total", "Longueur totale"), "Age moyen")
   
   return(dataResult)
 }
-
-
-
-
