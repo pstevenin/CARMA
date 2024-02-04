@@ -2,39 +2,63 @@
 #' 
 #' @description User interface side for shiny app.
 #' 
-ui <- shinydashboard::dashboardPage(
+ui <- dashboardPage(
   
   #title
-  shinydashboard::dashboardHeader(title = "CARMA V1.0"),
-  
+  dashboardHeader(title = "Ecoles"),
+
   #configuration
-  shinydashboard::dashboardSidebar(
-    #visualization options
-    shiny::textInput(inputId = "dirData", label = "Répertoire des données"),
-    shiny::selectInput(inputId = "equipment", label = "Equipement", choices = c("Câble souterrain" = "Cable", "Disjoncteur" = "Disjoncteur")),
-    shiny::selectInput(inputId = "baseMap", label = "Fond de carte RTE", choices = c("GMR", "Maintenance", "Sites", "GDP")),
-    shiny::uiOutput(outputId = "uiYear"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Configuration", tabName = "config"),
+      menuItem("Navigation", tabName = "free"),
+      menuItem("Diplômes", tabName = "grad"),
+      menuItem("Sectorisation", tabName = "sector")
+    ),
     #buttons
-    shiny::tags$footer(
-      shinyWidgets::actionBttn(inputId = "load", label = "Charger", style = "stretch", icon = icon("upload"), size = "sm"),
-      shinyWidgets::actionBttn(inputId = "save", label = "Sauver", style = "stretch", icon = icon("save"), size = "sm"),
-      shinyWidgets::actionBttn(inputId = "exit", label = "Quitter", style = "stretch", icon = icon("times-circle"), size = "sm", color = "danger"),
+    tags$footer(
+      actionBttn(inputId = "load", label = "Charger", style = "stretch", icon = icon("upload"), size = "sm"),
+      actionBttn(inputId = "save", label = "Sauver", style = "stretch", icon = icon("save"), size = "sm"),
+      actionBttn(inputId = "exit", label = "Quitter", style = "stretch", icon = icon("times-circle"), size = "sm", color = "danger"),
       style = "bottom:0; width:100%; position:fixed;"
       )
     ),
-  
+
   #map and table
-  shinydashboard::dashboardBody(
-    shiny::fluidRow(
-      #map
-      shinydashboard::box(
-        width = 12,
-        leaflet::leafletOutput(outputId = "map")
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "config",
+        textInput(inputId = "dirEco", label = "Répertoire Ecoles"),
+        textInput(inputId = "dirCol", label = "Résultats Collèges"),
+        textInput(inputId = "dirLyc", label = "Répertoire Lycées"),
+        textInput(inputId = "dirSec", label = "Répertoire Sectorisation")
         ),
-      #table
-      shinydashboard::box(
-        width = 12,
-        DT::dataTableOutput(outputId = "table")
+      tabItem(
+        tabName = "free",
+        tmapOutput("freeMap"),
+        flowLayout(
+          uiOutput("uiFreeRegion", width = 4),
+          selectInput("freeSector", "Secteur", choices = c("Public", "Privé", "Tous"), selected = "Tous"),
+          selectInput("freeNature", "Nature", choices = c("Maternelle", "Primaire", "Collège", "Lycée", "Autre", "Tous"), selected = "Tous")
+          )
+        ),
+      tabItem(
+        tabName = "grad",
+        tmapOutput("gradMap"),
+        flowLayout(
+          uiOutput("uiGradRegion"),
+          selectInput("gradSector", "Secteur", choices = c("Public", "Privé", "Tous"), selected = "Tous"),
+          selectInput("gradNature", "Nature", choices = c("Collège", "Lycée"), selected = "Lycée"),
+          uiOutput("uiGradCat")
+          )
+        ),
+      tabItem(
+        tabName = "sector",
+        uiOutput("uiSecRegion"),
+        uiOutput("uiSecCity"),
+        uiOutput("uiSecStreet"),
+        dataTableOutput("secTab")
         )
       )
     )
