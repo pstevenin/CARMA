@@ -73,7 +73,7 @@ server <- function(input, output, session) {
       }
       dataMap <- dataMap %>%
         select(c(26, 9, 28, 37, 27, 25))
-      names(dataMap)[1:6] <- c("Nom", "Commune", "Adresse", "Nature", "Secteur")
+      names(dataMap)[1:5] <- c("Nom", "Commune", "Adresse", "Nature", "Secteur")
       tm_shape(dataMap) +
         tm_symbols(col = "red", scale = .1, id = "appellation_officielle") +
         tm_basemap(server = "Esri.WorldTopoMap")
@@ -131,8 +131,7 @@ server <- function(input, output, session) {
       names(dataMap)[1:7] <- c("ID", "Code Postal", "Commune", "Secteur", "Adresse", "Nom", "Département")
       if (input$gradSector!="Tous") {
         dataMap <- dataMap %>%
-          filter(Secteur==req(input$gradSector)) +
-          tm_basemap(server = "Esri.WorldTopoMap")
+          filter(Secteur==req(input$gradSector))
       }
       if (input$gradCat=="S") {
         tm_shape(dataMap) +
