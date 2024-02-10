@@ -2,12 +2,12 @@
 library(data.table)
 library(dplyr)
 library(DT)
-library(tmap)
 library(geojsonsf)
 library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
 library(stringr)
+library(tmap)
 
 #hide warning messages from group_by/summarise functions
 options(dplyr.summarise.inform = F)

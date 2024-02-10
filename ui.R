@@ -36,22 +36,22 @@ ui <- dashboardPage(
         ),
       tabItem(
         tabName = "free",
-        tmapOutput("freeMap"),
         flowLayout(
-          uiOutput("uiFreeRegion", width = 4),
           selectInput("freeSector", "Secteur", choices = c("Public", "Privé", "Tous"), selected = "Tous"),
+          uiOutput("uiFreeRegion", width = 4),
           selectInput("freeNature", "Nature", choices = c("Maternelle", "Primaire", "Collège", "Lycée", "Autre", "Tous"), selected = "Tous")
-          )
+          ),
+        tmapOutput("freeMap", height = 700)
         ),
       tabItem(
         tabName = "grad",
-        tmapOutput("gradMap"),
         flowLayout(
-          uiOutput("uiGradRegion"),
           selectInput("gradSector", "Secteur", choices = c("Public", "Privé", "Tous"), selected = "Tous"),
+          uiOutput("uiGradRegion"),
           selectInput("gradNature", "Nature", choices = c("Collège", "Lycée"), selected = "Lycée"),
           uiOutput("uiGradCat")
-          )
+          ),
+        tmapOutput("gradMap", height = 700)
         ),
       tabItem(
         tabName = "sector",
